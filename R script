@@ -1,0 +1,242 @@
+setwd("/Users/varvara.louvrou/Desktop/")
+
+library(readxl)
+library(ggplot2)
+library(stats)
+library(lme4)
+library(car)
+library(emmeans)
+library(multcomp)
+library(stringr)
+
+a <- read_excel("6Fstudy3_Rdata.xlsx")
+
+str(a)
+b <- a[,1:19]
+str(b)
+
+b$Group <- as.factor(b$Group)
+b$Time <- as.factor(b$Time)
+b$Subject <- as.factor(b$Subject)
+
+install.packages('emmeans')
+
+library(tidyverse)
+
+log10_transformed <- as.data.frame(mutate_if(b, is.numeric, log10))
+
+#NAM 
+
+log_model_NAM <- lmer(NAM ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_NAM_gt <- emmeans(log_model_NAM, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_NAM_gt, by = 'Group')
+pairs(log_NAM_gt, by = 'Time')
+
+#PIC 
+
+log_model_PIC <- lmer(PIC ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_PIC_gt <- emmeans(log_model_PIC, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_PIC_gt, by = 'Group') 
+pairs(log_PIC_gt, by = 'Time') 
+
+#QUIN
+
+log_model_QUIN <- lmer(QUIN ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_QUIN_gt <- emmeans(log_model_QUIN, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_QUIN_gt, by = 'Group')
+pairs(log_QUIN_gt, by = 'Time')
+
+#KYNA
+
+log_model_KYNA <- lmer(KYNA ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_KYNA_gt <- emmeans(log_model_KYNA, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_KYNA_gt, by = 'Group')
+pairs(log_KYNA_gt, by = 'Time')
+
+#TRP
+
+log_model_TRP <- lmer(TRP ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_TRP_gt <- emmeans(log_model_TRP, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_TRP_gt, by = 'Group')
+pairs(log_TRP_gt, by = 'Time')
+
+#KYN
+
+log_model_KYN <- lmer(KYN ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_KYN_gt <- emmeans(log_model_KYN, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_KYN_gt, by = 'Group')
+pairs(log_KYN_gt, by = 'Time')
+
+#3-HK
+
+log_model_HK <- lmer(HK ~ Group + Time + Group*Time + Age + (1|Subject), data = log10_transformed)
+log_HK_gt <- emmeans(log_model_HK, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(log_HK_gt, by = 'Group')
+pairs(log_HK_gt, by = 'Time')
+
+#Assumption for mixed models is the homogeneity of variance, tested by the Levene's test
+
+#Levene's tests
+leveneTest(PIC ~ Group*Time, data = log10_transformed)
+
+leveneTest(NAM ~ Group*Time, data = log10_transformed)
+
+leveneTest(KYNA ~ Group*Time, data = log10_transformed)
+
+leveneTest(HK ~ Group*Time, data = log10_transformed)
+
+leveneTest(KYN ~ Group*Time, data = log10_transformed)
+
+leveneTest(TRP ~ Group*Time, data = log10_transformed)
+
+leveneTest(QUIN ~ Group*Time, data = log10_transformed)
+
+#Histograms to visualise normality in the residuals of the model 
+hist(residuals(log_model_PIC, type="response"))
+hist(residuals(log_model_HK, type="response"))
+hist(residuals(log_model_KYNA, type="response"))
+hist(residuals(log_model_QUIN, type="response"))
+hist(residuals(log_model_NAM, type="response"))
+hist(residuals(log_model_TRP, type="response"))
+hist(residuals(log_model_KYN, type="response"))
+
+#QQ plots for all metabolites to check normality
+
+qqnorm(resid(log_model_PIC))
+qqnorm(resid(log_model_NAM))
+qqnorm(resid(log_model_TRP))
+qqnorm(resid(log_model_KYNA))
+qqnorm(resid(log_model_KYN))
+qqnorm(resid(log_model_HK))
+
+#FOR NON-METABOLITES
+
+#After % change transformation on Weight and BMI
+
+setwd("/Users/varvara.louvrou/Desktop/")
+d <- read_excel("6Fstudy_WB.xlsx")
+str(d)
+
+d$Group <- as.factor(b$Group)
+d$Time <- as.factor(b$Time)
+d$Subject <- as.factor(b$Subject)
+
+#Model for Weight (%change)
+model_W <- lmer(Weight ~ Group + Time + Group*Time + Age + (1|Subject), data = d)
+
+pwc_W_gt <- emmeans(model_W, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_W_gt, by = 'Group')
+pairs(pwc_W_gt, by = 'Time')
+
+#Model for BMI (%change)
+model_B <- lmer(BMI ~ Group + Time + Group*Time + Age + (1|Subject), data = d)
+
+pwc_B_gt <- emmeans(model_B, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_B_gt, by = 'Group')
+pairs(pwc_B_gt, by = 'Time')
+
+#Model for Cortisol*
+model_Cortisol <- lmer(Cortisol ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+
+pwc_Cortisol_gt <- emmeans(model_Cortisol, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Cortisol_gt, by = 'Group')
+pairs(pwc_Cortisol_gt, by = 'Time')
+
+#Model for Noradrenaline
+model_Noradrenaline <- lmer(Noradrenaline ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+
+pwc_Noradrenaline_gt <- emmeans(model_Noradrenaline, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Noradrenaline_gt, by ='Group')
+pairs(pwc_Noradrenaline_gt, by ='Time')
+
+#Model for Adrenaline
+model_Adrenaline <- lmer(Adrenaline ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+
+pwc_Adrenaline_gt <- emmeans(model_Adrenaline, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Adrenaline_gt, by = 'Group')
+pairs(pwc_Adrenaline_gt, by = 'Time')
+
+#Model for Plasma Cortisol
+model_Plasma_Cortisol <- lmer(Plasma_Cortisol ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+
+pwc_Plasma_Cortisol_gt <- emmeans(model_Plasma_Cortisol, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Plasma_Cortisol_gt, by = 'Group')
+pairs(pwc_Plasma_Cortisol_gt, by = 'Time')
+
+#Model for Glucose
+model_Glucose <- lmer(Glucose ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+
+pwc_Glucose_gt <- emmeans(model_Glucose, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Glucose_gt, by = 'Group')
+pairs(pwc_Glucose_gt, by = 'Time')
+
+#Model for Ketones
+
+install.packages('lmerTest')
+install.packages('sandwich')
+
+model_Ketone <- lmer(Ketone ~ Group + Time + Group*Time + Age + (1|Subject), data = a)
+summary(model_Ketone, robust = TRUE)
+
+pwc_Ketone_gt <- emmeans(model_Ketone, ~ Group*Time, p.adjust.method = "bonferroni")
+pairs(pwc_Ketone_gt, by = 'Group')
+pairs(pwc_Ketone_gt, by = 'Time')
+robust_se <- sqrt(diag(vcov(model_Ketone)))
+
+#levene's tests
+
+leveneTest(Weight ~ Group*Time, data = a)
+
+leveneTest(BMI ~ Group*Time, data = a)
+
+leveneTest(Adrenaline ~ Group*Time, data = a)
+
+leveneTest(Noradrenaline ~ Group*Time, data = a)
+
+leveneTest(Cortisol ~ Group*Time, data = a)
+
+leveneTest(Plasma_Cortisol ~ Group*Time, data = a)
+
+leveneTest(Glucose ~ Group*Time, data = a)
+
+leveneTest(Ketone ~ Group*Time, data = a)
+
+#Histograms to visualise normality in the residuals of the model 
+hist(residuals(model_W, type="response"))
+hist(residuals(model_B, type="response"))
+hist(residuals(model_Adrenaline, type="response"))
+hist(residuals(model_Noradrenaline, type="response"))
+hist(residuals(model_Cortisol, type="response"))
+hist(residuals(model_Plasma_Cortisol, type="response"))
+hist(residuals(model_Glucose, type="response"))
+hist(residuals(model_Ketone, type="response"))
+
+#QQ plots for all non-metabolites to check normality
+
+qqnorm(resid(model_W))
+qqnorm(resid(model_B))
+qqnorm(resid(model_Adrenaline))
+qqnorm(resid(model_Noradrenaline))
+qqnorm(resid(model_Cortisol))
+qqnorm(resid(model_Plasma_Cortisol))
+qqnorm(resid(model_Ket))
+qqnorm(resid(model_Glucose))
+
+install.packages("ggpubr")
+
+#Welch t-tests
+
+AgeC <- c(21, 21, 29, 24, 29, 26, 21, 20, 22, 21)
+AgeF <- c(35, 39, 38, 29, 36, 24, 29, 26, 23, 22, 34, 40, 41, 33)
+ab <- t.test(AgeF, AgeC, var.equal=FALSE)
+ab
+
+BMIC <- c(23.3,	22.2,	22.1, 22.8,	28.2,	22.9,	21,	19.7,	25.2,	24.6)
+BMIF <- c(25.8,	27.4,	22.5,	22.3,	25.3,	23.6,	28.7,	23.2,	23.5, 28.3,	29.5,	25.6,	27.1,	27.6)
+bc <- t.test(BMIC, BMIF, var.equal=FALSE)
+bc
+
+WC <- c(82.5,	69.6,	69.9, 83.2,	114.9, 70.2, 64.3,	59.7,	79,	95.3)
+WF <- c(85.6,	84.8,	65.7,	70.8,	83,	86.2,	117.2, 71.2,	94,	103.4, 93.5,	97.5,	93.6,	89.5)
+cd <- t.test(WF, WC, var.equal=FALSE)
+cd
